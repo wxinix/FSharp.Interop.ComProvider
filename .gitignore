@@ -16,7 +16,7 @@ bld/
 [Bb]in/
 [Oo]bj/
 [Pp]ackages/
-/.vs/
+.vs/*
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
