@@ -8,7 +8,7 @@ This repository is updated and maintenained by Wuping Xin (https://github.com/wx
 
 Normally, to do COM interop from a .NET project, you need to use the _Add Reference_ context menu from the Project Explorer of the Visual Studio IDE and select the registered COM component you would like to reference. This generates an assembly containing the interop types that you can then consume from your code.
 
-Behind the scenes, _Add Reference_ actually depends on the `TypeLibConverter` class to create the interop types in the generated assembly. As a matter of facdt, the TypeLibConverter class is also used by the standalone `tlbimp.exe` tool. With this FSharp COM Type Provider, we leverage the same `TypeLibConverter` class  to generate the interop types.
+Behind the scenes, _Add Reference_ actually depends on the `TypeLibConverter` class to create the interop types in the generated assembly. As a matter of fact, the TypeLibConverter class is also used by the standalone `tlbimp.exe` tool. With this FSharp COM Type Provider, we leverage the same `TypeLibConverter` class  to generate the interop types.
 
 ## Limitations and Known Issues
 
