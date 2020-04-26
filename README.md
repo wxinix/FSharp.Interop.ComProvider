@@ -2,7 +2,7 @@
 
 The COM Type Provider provides a new way to do COM interop from F#. Support consuming both 32-bit and 64-bit COM components. This repository is forked from [this fsprojects repository](https://github.com/fsprojects/FSharp.Interop.ComProvider). You can also find the [original documentation](http://fsprojects.github.io/FSharp.ComProvider/) here.
 
-This repository is updated and maintenained by Wuping Xin (https://github.com/wxinix). 
+This repository is updated and maintenained by Wuping Xin (https://github.com/wxinix). It serves as my personal "dog-feeding" project to learn the beautiful F# language.
 
 ## Technical Overview
 
