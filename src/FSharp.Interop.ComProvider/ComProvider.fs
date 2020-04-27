@@ -61,7 +61,7 @@ type ComProvider(cfg:TypeProviderConfig) as this =
             let nameTy = ProvidedTypeDefinition(asm, "COM", name, None)
             yield nameTy
             for version in versions do
-               let versionTy = ProvidedTypeDefinition(TypeContainer.TypeToBeDecided, version.Version.String, None)
+               let versionTy = ProvidedTypeDefinition(TypeContainer.TypeToBeDecided, version.Version.VersionStr, None)
                nameTy.AddMember(versionTy)
                versionTy.IsErased <- false
                versionTy.AddMembersDelayed <| fun _ ->
