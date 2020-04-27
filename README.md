@@ -27,5 +27,9 @@ Some of them I would like to eventually rectify if possible:
 * Type libraries with Primary Interop Assemblies (PIAs) such as Microsoft Office are not supported.
 * All the types generated from the type library will be embedded in the assembly, rather than just the ones you actually refer to in your code.
 
+## Code Style Guidline
+
+Microsoft [coding style guideline]https://docs.microsoft.com/en-us/dotnet/fsharp/style-guide/formatting is used.
+
 ## Maintainer of this Repository
 - [@wxinix](https://github.com/wxinix)
