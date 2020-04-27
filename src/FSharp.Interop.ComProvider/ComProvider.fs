@@ -36,7 +36,7 @@ open TypeLibInfo
 open TypeLibImport
 
 [<TypeProvider>]
-type ComProvider(cfg:TypeProviderConfig) as this =
+type ComProvider(cfg: TypeProviderConfig) as this =
     inherit TypeProviderForNamespaces()
 
     let asm = Assembly.GetExecutingAssembly()
