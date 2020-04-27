@@ -58,7 +58,7 @@ let hideEvents assembly =
 
 let rec importTypeLib path asmDir =
     let assemblies = ResizeArray<Assembly>()
-    let rec convertToAsm (typeLib:ITypeLib) =
+    let rec convertToAsm (typeLib: ITypeLib) =
         let converter = TypeLibConverter()
         let libName = Marshal.GetTypeLibName(typeLib)
         let asmFile = libName + ".dll"

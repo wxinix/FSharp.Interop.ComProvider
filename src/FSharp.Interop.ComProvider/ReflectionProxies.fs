@@ -29,7 +29,7 @@ module private FSharp.Interop.ComProvider.ReflectionProxies
 
 open System.Reflection
 
-type AssemblyProxy(x:Assembly) =
+type AssemblyProxy(x: Assembly) =
     inherit Assembly()
     override __.CodeBase = x.CodeBase
     override __.CreateInstance(typeName, ignoreCase, bindingAttr, binder, args, culture, activatorAttributes) = 
@@ -78,7 +78,7 @@ type AssemblyProxy(x:Assembly) =
     override __.SecurityRuleSet = x.SecurityRuleSet
     override __.ToString() = x.ToString()
 
-type EventInfoProxy(x:EventInfo) =
+type EventInfoProxy(x: EventInfo) =
     inherit EventInfo()
     override __.Attributes = x.Attributes
     override __.AddEventHandler(target, handler) = x.AddEventHandler(target, handler)
@@ -96,7 +96,7 @@ type EventInfoProxy(x:EventInfo) =
     override __.ReflectedType = x.ReflectedType
     override __.RemoveEventHandler(target, handler) = x.RemoveEventHandler(target, handler)
 
-type MethodInfoProxy(x:MethodInfo) =
+type MethodInfoProxy(x: MethodInfo) =
     inherit MethodInfo()
     override __.Attributes = x.Attributes
     override __.CallingConvention = x.CallingConvention
@@ -127,7 +127,7 @@ type MethodInfoProxy(x:MethodInfo) =
     override __.ReturnTypeCustomAttributes = x.ReturnTypeCustomAttributes
     override __.ToString() = x.ToString()
 
-type PropertyInfoProxy(x:PropertyInfo) =
+type PropertyInfoProxy(x: PropertyInfo) =
     inherit PropertyInfo()
     override __.Attributes = x.Attributes
     override __.CanRead = x.CanRead

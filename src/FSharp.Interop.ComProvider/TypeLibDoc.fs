@@ -27,21 +27,21 @@
 
 module private FSharp.Interop.ComProvider.TypeLibDoc
 
+open Microsoft.FSharp.Core.CompilerServices
 open System
+open System.Collections.Generic
+open System.Reflection
 open System.Runtime.InteropServices
 open System.Runtime.InteropServices.ComTypes
-open System.Reflection
-open System.Collections.Generic
-open Microsoft.FSharp.Core.CompilerServices
 open ReflectionProxies
 open Utility
 
-let getStruct<'t when 't:struct> ptr freePtr =
+let getStruct<'t when 't: struct> ptr freePtr =
     let str = Marshal.PtrToStructure(ptr, typeof<'t>) :?> 't
     freePtr ptr
     str
 
-let getTypeLibDoc (typeLib:ITypeLib) =
+let getTypeLibDoc (typeLib: ITypeLib) =
     [ for typeIndex = 0 to typeLib.GetTypeInfoCount() - 1 do
         let typeInfo = typeLib.GetTypeInfo(typeIndex)
         let typeAttr = getStruct<TYPEATTR> (typeInfo.GetTypeAttr()) typeInfo.ReleaseTypeAttr
@@ -54,8 +54,8 @@ let getTypeLibDoc (typeLib:ITypeLib) =
         yield typeName, (typeDoc, Map.ofSeq memberDocs) ]
     |> Map.ofSeq
 
-let annotateAssembly typeDocs (asm:Assembly) =
-    let toList (items:seq<'t>) = ResizeArray<'t> items :> IList<'t>
+let annotateAssembly typeDocs (asm: Assembly) =
+    let toList (items: seq<'t>) = ResizeArray<'t> items :> IList<'t>
 
     let attrCons = typeof<TypeProviderXmlDocAttribute>.GetConstructor [| typeof<string> |]
     let attrData docString =
@@ -68,12 +68,12 @@ let annotateAssembly typeDocs (asm:Assembly) =
         |> Seq.append (memb.GetCustomAttributesData())
         |> toList
 
-    let findSourceInterface (ty:Type) =
+    let findSourceInterface (ty: Type) =
         match ty.TryGetAttribute<ComEventInterfaceAttribute>() with
         | Some attr -> attr.SourceInterface
         | _ -> ty
 
-    let findRelatedMember (memb:MemberInfo) =
+    let findRelatedMember (memb: MemberInfo) =
         memb.DeclaringType.GetEvents()
         |> Seq.tryFind (fun event ->
             [ event.GetAddMethod(); event.GetRemoveMethod() ]
@@ -82,12 +82,12 @@ let annotateAssembly typeDocs (asm:Assembly) =
             | Some event -> event :> MemberInfo
             | None -> memb
 
-    let typeDoc (ty:Type) =
+    let typeDoc (ty: Type) =
         typeDocs
         |> Map.tryFind ty.Name
         |> Option.map fst
 
-    let memberDoc (memb:MemberInfo) =
+    let memberDoc (memb: MemberInfo) =
         let ty = memb.DeclaringType
         ty.GetInterfaces()
         |> Seq.append [ty]
@@ -96,7 +96,7 @@ let annotateAssembly typeDocs (asm:Assembly) =
         |> Seq.choose (fun (_, membs) -> membs |> Map.tryFind (findRelatedMember memb).Name)
         |> Seq.tryFind (not << String.IsNullOrEmpty)
 
-    let annotate getDoc addAnnotation (memb:#MemberInfo) =
+    let annotate getDoc addAnnotation (memb: #MemberInfo) =
         let doc = defaultArg (getDoc memb) ""
         addAnnotation (addAttr doc memb) memb
 
