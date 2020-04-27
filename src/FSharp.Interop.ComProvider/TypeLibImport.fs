@@ -39,7 +39,7 @@ open TypeLibDoc
 extern void private LoadTypeLib(string filename, ITypeLib& typelib);
 
 let loadTypeLib path =
-    let mutable typeLib:ITypeLib = null
+    let mutable typeLib: ITypeLib = null
     LoadTypeLib(path, &typeLib)
     if typeLib = null then
         failwith ("Error loading type library. Please check that the component is correctly installed and registered.")
@@ -52,7 +52,7 @@ let hideEvents assembly =
     // the add / remove handler methods.
     let hideTypeEvents ty =
         { new TypeProxy(ty) with
-            override __.GetEvents(flags) = [||] } :> Type
+            override __.GetEvents(flags) = [| |] } :> Type
     { new AssemblyProxy(assembly) with
         override __.GetTypes() = base.GetTypes() |> Array.map hideTypeEvents } :> Assembly
 
