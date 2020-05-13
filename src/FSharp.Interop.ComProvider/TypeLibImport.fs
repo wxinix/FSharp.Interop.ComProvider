@@ -41,23 +41,27 @@ extern void private LoadTypeLib(string filename, ITypeLib& typelib);
 let loadTypeLib path =
     let mutable typeLib: ITypeLib = null
     LoadTypeLib(path, &typeLib)
-    if typeLib = null then
-        failwith ("Error loading type library. Please check that the component is correctly installed and registered.")
-    typeLib
+    match typeLib with
+        | null -> failwith ("Error loading type library. Check if the component is correctly installed and registered.")
+        | _    -> typeLib
 
+/// <summary> Hides event members for each and every type contained in the assembly. </summary>
+/// <remarks> COM events won't get imported properly as F# first-class events, as F# expects the
+/// first parameter to be the "sender", a convention COM does not follow. </remarks>
 let hideEvents assembly =
-    // COM events don't import correctly as first-class events in F#, as it
-    // expects the first parameter to be the "sender", a convention COM does
-    // not follow. Therefore, we hide the actual event members and only expose
-    // the add / remove handler methods.
     let hideTypeEvents ty =
         { new TypeProxy(ty) with
             override __.GetEvents(flags) = [| |] } :> Type
     { new AssemblyProxy(assembly) with
         override __.GetTypes() = base.GetTypes() |> Array.map hideTypeEvents } :> Assembly
 
+/// Converts the specified type lib and its dependent type libs as assemblies with COM events hidden.
+/// The converted assemblies are returned in an immutable list.
 let rec importTypeLib path asmDir =
+    // Mutable array of assemblies, initialized as empty.
     let assemblies = ResizeArray<Assembly>()
+    // Convert the specified type lib and its dependent type libs to .NET assemblies,
+    // while adding the converted assemblies to the local mutable assemblies array.
     let rec convertToAsm (typeLib: ITypeLib) =
         let converter = TypeLibConverter()
         let libName = Marshal.GetTypeLibName(typeLib)
@@ -75,6 +79,7 @@ let rec importTypeLib path asmDir =
         |> hideEvents
         |> assemblies.Add
         asm :> Assembly
+    // Return the local assemblies array as an immutable list.
     let typeLib = loadTypeLib path
     convertToAsm typeLib |> ignore
     assemblies |> Seq.toList
