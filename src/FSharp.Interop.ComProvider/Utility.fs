@@ -32,19 +32,21 @@ open System.Reflection
 open System
 
 type RegistryKey with
-    member this.SubKeyName =
+    member this.ShortName =
         this.Name.Split '\\' |> Seq.last
     member this.DefaultValue =
         this.GetValue("") |> string
     member this.GetSubKeys() =
         seq {
-            for keyName in this.GetSubKeyNames() do
-                use key = this.OpenSubKey keyName
-                yield key
-        }
+               for name in this.GetSubKeyNames() do
+                 use key = this.OpenSubKey name // Dispose() to be called when the enumerator goes out scope 
+                 yield key                      // in the caller's foreach loop.
+         }
 
 type ICustomAttributeProvider with
+    // Retrieve specified attribute (incl. its derived attribute). In case of multiple ones existing
+    // just returns the first one.
     member this.TryGetAttribute<'t when 't :> Attribute>() =
         this.GetCustomAttributes(typeof<'t>, true)
         |> Seq.cast<'t>
-        |> Seq.tryFind (fun _ -> true)
+        |> Seq.tryFind(fun _ -> true)
