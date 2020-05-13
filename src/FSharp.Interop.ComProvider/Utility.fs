@@ -38,9 +38,9 @@ type RegistryKey with
     member this.DefaultValue =
         this.GetValue("") |> string
 
-    // Returns a sequence with disposable elements. Each element's Dispose () will be called
-    // when the enumerator referencing each element goes out of scope in the caller's foreach
-    // loop.
+    /// Returns a sequence with disposable elements. Each element's Dispose () will be
+    /// called when the enumerator referencing each element goes out of scope in the 
+    /// caller's foreach loop.
     member this.GetSubKeys() =
         seq {
                for name in this.GetSubKeyNames() do
@@ -49,8 +49,8 @@ type RegistryKey with
          }
 
 type ICustomAttributeProvider with
-    // Retrieves specified attribute (incl. its derived attribute). In case of multiple ones
-    // existing just returns the first one.
+    /// Retrieves the attribute of the specified base type and inherited types. In case
+    /// of multiple ones, only one is returned.
     member this.TryGetAttribute<'t when 't :> Attribute>() =
         this.GetCustomAttributes(typeof<'t>, true)
         |> Seq.cast<'t>
