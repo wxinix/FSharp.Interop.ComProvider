@@ -34,18 +34,23 @@ open System
 type RegistryKey with
     member this.ShortName =
         this.Name.Split '\\' |> Seq.last
+
     member this.DefaultValue =
         this.GetValue("") |> string
+
+    // Returns a sequence with disposable elements. Each element's Dispose () will be called
+    // when the enumerator referencing each element goes out of scope in the caller's foreach
+    // loop.
     member this.GetSubKeys() =
         seq {
                for name in this.GetSubKeyNames() do
-                 use key = this.OpenSubKey name // Dispose() to be called when the enumerator goes out scope 
-                 yield key                      // in the caller's foreach loop.
+                   use key = this.OpenSubKey name
+                   yield key
          }
 
 type ICustomAttributeProvider with
-    // Retrieve specified attribute (incl. its derived attribute). In case of multiple ones existing
-    // just returns the first one.
+    // Retrieves specified attribute (incl. its derived attribute). In case of multiple ones
+    // existing just returns the first one.
     member this.TryGetAttribute<'t when 't :> Attribute>() =
         this.GetCustomAttributes(typeof<'t>, true)
         |> Seq.cast<'t>
