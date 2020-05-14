@@ -60,25 +60,32 @@ let hideEvents assembly =
 let rec importTypeLib path asmDir =
     // Mutable array of assemblies, initialized as empty.
     let assemblies = ResizeArray<Assembly>()
+
     // Convert the specified type lib and its dependent type libs to .NET assemblies,
     // while adding the converted assemblies to the local mutable assemblies array.
     let rec convertToAsm (typeLib: ITypeLib) =
-        let converter = TypeLibConverter()
         let libName = Marshal.GetTypeLibName(typeLib)
         let asmFile = libName + ".dll"
         let asmPath = Path.Combine(asmDir, asmFile)
         let flags = TypeLibImporterFlags.None
+
         let sink = { new ITypeLibImporterNotifySink with
             member __.ReportEvent(eventKind, eventCode, eventMsg) = ()
             member __.ResolveRef(typeLib) = convertToAsm (typeLib :?> ITypeLib) }
-        let asm = converter.ConvertTypeLibToAssembly(typeLib, asmPath, flags, sink, null, null, libName, null)
-        asm.Save(asmFile)
-        let typeDocs = getTypeLibDoc typeLib
-        Assembly.LoadFrom(asmPath)
-        |> annotateAssembly typeDocs
+
+        // Convert type lib to assembly, then save the assembly to disk file in a temp folder.
+        let asm = TypeLibConverter().ConvertTypeLibToAssembly(typeLib, asmPath, flags, sink, null, null, libName, null)
+        asm.Save(asmFile) // asmFile cannot contain path, just file name.
+
+        // Load the assembly into memory
+        Assembly.LoadFrom (asmPath)
+        |> annotateAssembly (getTypeLibDoc typeLib)
         |> hideEvents
         |> assemblies.Add
+
+        // Return the converted assembly
         asm :> Assembly
+
     // Return the local assemblies array as an immutable list.
     let typeLib = loadTypeLib path
     convertToAsm typeLib |> ignore

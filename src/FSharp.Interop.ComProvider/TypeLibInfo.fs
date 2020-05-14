@@ -55,10 +55,8 @@ let private isInDotNetPath =
     let dotNetPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"Microsoft.NET")
     fun (path: string) -> path.StartsWith(dotNetPath, StringComparison.OrdinalIgnoreCase)
 
-/// <summary> Loads type libs for the preferred platform. </summary>
-/// <remarks> The preferred platform can be either "win32", "win64", or "*". If preferred platform is "*", 
-/// then both "win32" and "win64" type libs will be loaded. </remark>
-/// <return> A sequence of TypeLib records. </return>
+/// Loads type libs for the preferred platform and returns a sequence of TypeLib records. The preferred platform
+/// can be either "win32", "win64", or "*". If "*", then both "win32" and "win64" type libs will be loaded. 
 let loadTypeLibs preferredPlatform =
     [ use rootKey = Registry.ClassesRoot.OpenSubKey("TypeLib")
       for typeLibKey in rootKey.GetSubKeys() do                   // typeLibKey is a GUID string
