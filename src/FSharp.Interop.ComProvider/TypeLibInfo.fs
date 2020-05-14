@@ -78,5 +78,4 @@ let loadTypeLibs preferredPlatform =
     |> Seq.filter (fun lib -> not (isInDotNetPath lib.Path))
     |> Seq.groupBy (fun lib -> lib.Name, lib.Version)
     |> Seq.collect (fun (_, libs) -> 
-           libs |> Seq.filter(fun lib -> 
-                       (lib.Platform = preferredPlatform) || preferredPlatform.Equals("*")))
+           libs |> Seq.filter(fun lib -> preferredPlatform = lib.Platform || preferredPlatform = "*"))
