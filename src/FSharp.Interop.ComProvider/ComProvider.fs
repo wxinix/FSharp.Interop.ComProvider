@@ -39,42 +39,62 @@ open TypeLibImport
 type ComProvider(cfg: TypeProviderConfig) as this =
     inherit TypeProviderForNamespaces()
 
+    /// Currently executing assembly.
     let asm = Assembly.GetExecutingAssembly()
 
-    // The TypeLib registry key allows specifying separate type libraries for each CPU
-    // platform. However, there is no way to know what the target platform will be when
-    // compiling a project, since this information is not available to type providers.
-    // Furthermore, the target platform isn't actually known until runtime if Any CPU
-    // is selected. I think it would be unusual for the metadata to differ between type
-    // libraries for different platforms, but for consistency we'll always prefer the
-    // 32-bit type library when compiling. When running in-process, such as with FSI,
-    // we'll prefer the platform of the host process.
-    let preferredPlatform =
+    /// Temporary cache fodler.
+    let tempDir = Path.Combine(cfg.TemporaryFolder, "FSharp.Interop.ComProvider", Guid.NewGuid().ToString())
+
+    (*
+     The TypeLib registry key allows specifying separate type libraries for platform affinity. 
+     However, the type provider has no way to know what target platform the subject project 
+     will be compiled to beforehand. Furthermore, the target platform isn't actually known until
+     runtime if "Any CPU" is selected. Therefore, we have to leave this as the developer's choice 
+     in selecting the type library with proper platform affinity at source code level.
+
+     If the type library is for an out-of-process COM automation server, the client application
+     and server do not have to have the same CPU platform, that is, a win32 client can communicate
+     with a win64 COM server. In this case, we can choose win32 or win64 type library as we like, 
+     while seting either "Any CPU", "x86", or "x64" as the compiling option for the client application. 
+
+     If the type library is for an in-process COM Dll, the client application and the COM Dll must
+     have the same target platform. This means, if the COM Dll is 32 bit, the compiling option must
+     be consistent, and must be set to x86 CPU as well.
+ 
+    // Depreciated. See above comments.
+    let preferredPlatform = 
         if cfg.IsHostedExecution && Environment.Is64BitProcess then "win64" else "win32"
+    *)
+
+    /// Takes one of the three values, "win32", "win64", or "*" for both.
+    let preferredPlatform = "*"
 
     // We use nested types as opposed to namespaces for the following reasons:
     // 1. No way with ProvidedTypes API to have sub-namespaces generated on demand.
     // 2. Namespace components cannot contain dots, which are common both in the
     // type library name itself and of course the major.minor version number.
     let types =
-        [ for name, versions in loadTypeLibs preferredPlatform |> Seq.groupBy (fun l -> l.Name) do
-            let nameTy = ProvidedTypeDefinition(asm, "COM", name, None)
+        [ for name, libs in loadTypeLibs preferredPlatform |> Seq.groupBy (fun lib -> lib.Name) do
+            let nameTy = ProvidedTypeDefinition(asm, "COM", name, None) // COM is namespaceName.
             yield nameTy
-            for version in versions do
-               let versionTy = ProvidedTypeDefinition(TypeContainer.TypeToBeDecided, version.Version.VersionStr, None)
+            for lib in libs do
+               let versionTy = ProvidedTypeDefinition(TypeContainer.TypeToBeDecided, lib.Version.VersionStr, None)
                nameTy.AddMember(versionTy)
                versionTy.IsErased <- false
                versionTy.AddMembersDelayed <| fun _ ->
-                   version.Pia |> Option.iter (fun pia ->
-                       failwithf "Accessing type libraries with Primary Interop Assemblies using the COM Type Provider \
-                                  is not supported. Consider referencing the assembly '%s' instead." pia)
-                   let tempDir = Path.Combine(cfg.TemporaryFolder, "FSharp.Interop.ComProvider", Guid.NewGuid().ToString())
+                   lib.Pia |> Option.iter (fun pia -> 
+                       failwithf "Accessing type libraries with Primary Interop Assemblies using the COM Type Provider not supported. Directly referencing the assembly '%s' instead." pia)
                    Directory.CreateDirectory(tempDir) |> ignore
-                   let assemblies = importTypeLib version.Path tempDir
+                   let assemblies = importTypeLib lib.Path tempDir
                    assemblies |> List.iter(fun asm -> ProvidedAssembly.RegisterGenerated(asm.Location) |> ignore)
                    assemblies |> List.collect(fun asm -> asm.GetTypes() |> Seq.toList) ]
-    do  this.AddNamespace("COM", types)
+    do
+        this.AddNamespace("COM", types)
         this.RegisterProbingFolder(cfg.TemporaryFolder)
+
+    /// Finalizer to delete the temporary cache folder.
+    override this.Finalize() = 
+        Directory.Delete(tempDir, true) |> ignore
 
 [<TypeProviderAssembly>]
 ()
