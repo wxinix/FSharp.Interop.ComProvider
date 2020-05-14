@@ -44,8 +44,10 @@ type TypeLib = {
     Path: string
     Pia: string option } // Primary Interop Assembly
 
+/// Extracts type lib version info from a string in the format major.minor, where major and minor are hex numbers, e.g, d.0.
 let private tryParseVersion(text: string) =
-    match text.Split('.') |> Array.map Int32.TryParse with
+    let hexToInt s = Int32.TryParse(s, Globalization.NumberStyles.HexNumber, Globalization.CultureInfo.InvariantCulture)
+    match text.Split('.') |> Array.map hexToInt with
     | [| true, major; true, minor |] -> Some { VersionStr = text; Major = major; Minor = minor }
     | _ -> None
 
@@ -53,25 +55,28 @@ let private isInDotNetPath =
     let dotNetPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"Microsoft.NET")
     fun (path: string) -> path.StartsWith(dotNetPath, StringComparison.OrdinalIgnoreCase)
 
+/// <summary> Loads type libs for the preferred platform. </summary>
+/// <remarks> The preferred platform can be either "win32", "win64", or "*". If preferred platform is "*", 
+/// then both "win32" and "win64" type libs will be loaded. </remark>
+/// <return> A sequence of TypeLib records. </return>
 let loadTypeLibs preferredPlatform =
     [ use rootKey = Registry.ClassesRoot.OpenSubKey("TypeLib")
-      for typeLibKey in rootKey.GetSubKeys() do
-      for versionKey in typeLibKey.GetSubKeys() do
-      for localeKey in versionKey.GetSubKeys() do
-      for platformKey in localeKey.GetSubKeys() do
-          let name = versionKey.DefaultValue
-          let version = tryParseVersion versionKey.SubKeyName
-          if name <> "" && version.IsSome && localeKey.SubKeyName = "0" then
-              yield { Name = name
-                      Version = version.Value
-                      Platform = platformKey.SubKeyName
-                      Path = platformKey.DefaultValue
-                      Pia = match versionKey.GetValue("PrimaryInteropAssemblyName") with
-                            | :? string as pia -> Some pia
-                            | _ -> None } ]
+      for typeLibKey in rootKey.GetSubKeys() do                   // typeLibKey is a GUID string
+          for verKey in typeLibKey.GetSubKeys() do                // verKey is a version string in the format "major.minor"
+              for localeKey in verKey.GetSubKeys() do             // localeKey is a number representing locale
+                  for platformKey in localeKey.GetSubKeys() do    // platformKey is either "win32" or "win64"
+                      let name = verKey.DefaultValue
+                      let version = tryParseVersion verKey.ShortName
+                      if name <> "" && version.IsSome && localeKey.ShortName = "0" then
+                          yield { Name = sprintf "%s %s" name platformKey.ShortName
+                                  Version = version.Value // version is option(TypeLibVersion)
+                                  Platform = platformKey.ShortName
+                                  Path = platformKey.DefaultValue
+                                  Pia = match verKey.GetValue("PrimaryInteropAssemblyName") with
+                                        | :? string as pia -> Some pia
+                                        | _ -> None } ]
     |> Seq.filter (fun lib -> not (isInDotNetPath lib.Path))
     |> Seq.groupBy (fun lib -> lib.Name, lib.Version)
-    |> Seq.map (fun (_, libs) ->
-        match libs |> Seq.tryFind (fun lib -> lib.Platform = preferredPlatform) with
-        | Some lib -> lib
-        | None -> Seq.head libs) // This will possibly add non-preferredPlatform
+    |> Seq.collect (fun (_, libs) -> 
+           libs |> Seq.filter(fun lib -> 
+                       (lib.Platform = preferredPlatform) || preferredPlatform.Equals("*")))
