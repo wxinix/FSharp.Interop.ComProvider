@@ -1,6 +1,6 @@
 ﻿open System
 
-type Shell = COM.``Microsoft Shell Controls And Automation``.``1.0``
+type Shell = COM.``Microsoft Shell Controls And Automation win32``.``1.0``
 
 [<EntryPoint; STAThread>]
 let main argv =
