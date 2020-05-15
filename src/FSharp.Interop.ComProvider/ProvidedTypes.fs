@@ -563,7 +563,7 @@ type ProvidedEvent(eventName: string, eventHandlerType: Type) =
 
     // Delay construction - to pick up the latest isStatic
     let markSpecialName (m: ProvidedMethod) = m.AddMethodAttrs(MethodAttributes.SpecialName); m
-    let adder = lazy (ProvidedMethod("add_" + eventName, [ProvidedParameter("handler", eventHandlerType)], typeof<System.Void>,IsStaticMethod = isStatic, DeclaringTypeImpl = declaringType, InvokeCode = adderCode.Value) |> markSpecialName)  
+    let adder = lazy (ProvidedMethod("add_" + eventName, [ProvidedParameter("handler", eventHandlerType)], typeof<System.Void>, IsStaticMethod = isStatic, DeclaringTypeImpl = declaringType, InvokeCode = adderCode.Value) |> markSpecialName)  
     let remover = lazy (ProvidedMethod("remove_" + eventName, [ProvidedParameter("handler", eventHandlerType)], typeof<System.Void>, IsStaticMethod = isStatic,DeclaringTypeImpl = declaringType,InvokeCode = removerCode.Value) |> markSpecialName) 
  
     let customAttributesImpl = CustomAttributesImpl()
@@ -607,7 +607,7 @@ type ProvidedEvent(eventName: string, eventHandlerType: Type) =
     override this.GetCustomAttributes(_attributeType, _inherit) = notRequired "GetCustomAttributes" this.Name
     override this.IsDefined(_attributeType, _inherit) = notRequired "IsDefined" this.Name
 
-type ProvidedLiteralField(fieldName:string,fieldType:Type,literalValue:obj) = 
+type ProvidedLiteralField(fieldName: string, fieldType:Type, literalValue: obj) = 
     inherit System.Reflection.FieldInfo()
     // State
 
@@ -770,18 +770,18 @@ type ProvidedSymbolType(kind: SymbolKind, args: Type list) =
     override this.GetGenericTypeDefinition() = (match kind with SymbolKind.Generic e -> e | _ -> invalidOp "non-generic type")
     override this.IsCOMObjectImpl() = false
     override this.HasElementTypeImpl() = (match kind with SymbolKind.Generic _ -> false | _ -> true)
-    override this.GetElementType() = (match kind,args with (SymbolKind.Array _  | SymbolKind.SDArray | SymbolKind.ByRef | SymbolKind.Pointer),[e] -> e | _ -> invalidOp "not an array, pointer or byref type")
+    override this.GetElementType() = (match kind, args with (SymbolKind.Array _  | SymbolKind.SDArray | SymbolKind.ByRef | SymbolKind.Pointer),[e] -> e | _ -> invalidOp "not an array, pointer or byref type")
     override this.ToString() = this.FullName
 
     override this.Module: Module = notRequired "Module" this.Name
     override this.Assembly = 
         match kind with 
-        | SymbolKind.FSharpTypeAbbreviation (assembly,_nsp,_path) -> assembly
+        | SymbolKind.FSharpTypeAbbreviation (assembly, _nsp, _path) -> assembly
         | SymbolKind.Generic gty -> gty.Assembly
         | _ -> notRequired "Assembly" this.Name
     override this.Namespace = 
         match kind with 
-        | SymbolKind.FSharpTypeAbbreviation (_assembly,nsp,_path) -> nsp
+        | SymbolKind.FSharpTypeAbbreviation (_assembly, nsp, _path) -> nsp
         | _ -> notRequired "Namespace" this.Name
 
     override this.GetHashCode()                                                                    = 
@@ -906,8 +906,6 @@ type ProvidedMeasureBuilder() =
         | v -> v
     member b.AnnotateType (basicType, annotation) = ProvidedSymbolType(Generic basicType, annotation) :> Type
 
-
-
 [<RequireQualifiedAccess>]
 type TypeContainer =
   | Namespace of Assembly * string // namespace
@@ -956,7 +954,7 @@ type ProvidedTypeDefinition(container: TypeContainer, className: string, baseTyp
         
         membersKnown.ToArray()
 
-            // members API
+    // members API
     let getInterfaces() = 
         if interfaceImplsDelayed.Count > 0 then 
             let elems = interfaceImplsDelayed |> Seq.toArray // take a copy in case more elements get added
@@ -981,7 +979,7 @@ type ProvidedTypeDefinition(container: TypeContainer, className: string, baseTyp
       lazy 
         match container with
         | TypeContainer.Namespace (_,rootNamespace) -> rootNamespace
-        | TypeContainer.Type enclosingTyp           -> enclosingTyp.Namespace
+        | TypeContainer.Type enclosingTyp -> enclosingTyp.Namespace
         | TypeContainer.TypeToBeDecided -> failwith (sprintf "type '%s' was not added as a member to a declaring type" this.Name)
 
     let declaringType =
@@ -999,7 +997,7 @@ type ProvidedTypeDefinition(container: TypeContainer, className: string, baseTyp
             if namespaceName="" then failwith "use null for global namespace"
             match namespaceName with
             | null -> className
-            | _    -> namespaceName + "." + className
+            | _  -> namespaceName + "." + className
         | TypeContainer.TypeToBeDecided -> failwith (sprintf "type '%s' was not added as a member to a declaring type" this.Name)
                                                             
     let patchUpAddedMemberInfo (this: Type) (m: MemberInfo) = 
@@ -1018,7 +1016,7 @@ type ProvidedTypeDefinition(container: TypeContainer, className: string, baseTyp
     member this.AddXmlDocDelayed xmlDoc = customAttributesImpl.AddXmlDocDelayed xmlDoc
     member this.AddXmlDoc xmlDoc = customAttributesImpl.AddXmlDoc xmlDoc
     member this.AddObsoleteAttribute msg = customAttributesImpl.AddObsolete msg
-    member this.AddDefinitionLocation(line,column,filePath) = customAttributesImpl.AddDefinitionLocation(line, column, filePath)
+    member this.AddDefinitionLocation(line, column, filePath) = customAttributesImpl.AddDefinitionLocation(line, column, filePath)
     member this.HideObjectMethods with set v = customAttributesImpl.HideObjectMethods <- v
     member __.GetCustomAttributesDataImpl() = customAttributesImpl.GetCustomAttributesData()
 #if FX_NO_CUSTOMATTRIBUTEDATA
@@ -1028,8 +1026,8 @@ type ProvidedTypeDefinition(container: TypeContainer, className: string, baseTyp
 
     member this.ResetEnclosingType (ty) = 
         container <- TypeContainer.Type ty
-    new (assembly:Assembly,namespaceName,className,baseType) = new ProvidedTypeDefinition(TypeContainer.Namespace (assembly,namespaceName), className, baseType)
-    new (className,baseType) = new ProvidedTypeDefinition(TypeContainer.TypeToBeDecided, className, baseType)
+    new (assembly: Assembly, namespaceName, className, baseType) = new ProvidedTypeDefinition(TypeContainer.Namespace(assembly, namespaceName), className, baseType)
+    new (className, baseType) = new ProvidedTypeDefinition(TypeContainer.TypeToBeDecided, className, baseType)
     // state ops
 
     member this.SetBaseType t = baseType <- lazy Some t
@@ -1038,7 +1036,7 @@ type ProvidedTypeDefinition(container: TypeContainer, className: string, baseTyp
     // Add MemberInfos
     member this.AddMembersDelayed(makeMS:unit -> list<#MemberInfo>) =
         membersQueue.Add (fun () -> makeMS() |> List.map (fun x -> patchUpAddedMemberInfo this x; x :> MemberInfo ))
-    member this.AddMembers(ms:list<#MemberInfo>) = (* strict *)
+    member this.AddMembers(ms: list<#MemberInfo>) = (* strict *)
         ms |> List.iter (patchUpAddedMemberInfo this) // strict: patch up now
         membersQueue.Add (fun () -> ms |> List.map (fun x -> x :> MemberInfo))
     member this.AddMember(m:MemberInfo) = this.AddMembers [m]    
@@ -1173,9 +1171,9 @@ type ProvidedTypeDefinition(container: TypeContainer, className: string, baseTyp
 
     override this.GetPropertyImpl(name, bindingAttr, binder, returnType, types, modifiers) = 
         if returnType <> null then failwith "Need to handle specified return type in GetPropertyImpl"
-        if types      <> null then failwith "Need to handle specified parameter types in GetPropertyImpl"
-        if modifiers  <> null then failwith "Need to handle specified modifiers in GetPropertyImpl"
-        if binder  <> null then failwith "Need to handle binder in GetPropertyImpl"
+        if types <> null then failwith "Need to handle specified parameter types in GetPropertyImpl"
+        if modifiers <> null then failwith "Need to handle specified modifiers in GetPropertyImpl"
+        if binder <> null then failwith "Need to handle binder in GetPropertyImpl"
         let props = this.GetMembers bindingAttr |> Array.filter(fun m -> m.MemberType.HasFlag(MemberTypes.Property) && (name = null || m.Name = name))  // Review: nam = null, valid query!?
         if props.Length > 0 then
             props.[0] :?> PropertyInfo
@@ -1226,7 +1224,7 @@ type ProvidedTypeDefinition(container: TypeContainer, className: string, baseTyp
     override this.GetHashCode() = rootNamespace.GetHashCode() ^^^ className.GetHashCode()
     override this.Equals(that:obj) = 
         match that with
-        | null              -> false
+        | null -> false
         | :? ProvidedTypeDefinition as ti -> System.Object.ReferenceEquals(this,ti)
         | _                 -> false
 
@@ -1266,7 +1264,7 @@ type AssemblyGenerator(assemblyFileName) =
         assembly.DefineDynamicModule("MainModule")
 #else
     let assembly = 
-        System.AppDomain.CurrentDomain.DefineDynamicAssembly(name=assemblyName,access=(AssemblyBuilderAccess.Save ||| AssemblyBuilderAccess.Run),dir=Path.GetDirectoryName assemblyFileName)
+        System.AppDomain.CurrentDomain.DefineDynamicAssembly(name = assemblyName, access = (AssemblyBuilderAccess.Save ||| AssemblyBuilderAccess.Run),dir = Path.GetDirectoryName assemblyFileName)
     let assemblyMainModule = 
         assembly.DefineDynamicModule("MainModule", Path.GetFileName assemblyFileName)
 #endif
@@ -1289,7 +1287,7 @@ type AssemblyGenerator(assemblyFileName) =
                     if pntd.IsErased then invalidOp ("The nested provided type "+pntd.Name+"is marked as erased and cannot be converted to a generated type. Set 'IsErased' to false on the ProvidedTypeDefinition")
                     // Adjust the attributes - we're codegen'ing this type as nested
                     let attributes = adjustTypeAttributes ntd.Attributes true
-                    let ntb = tb.DefineNestedType(pntd.Name,attr=attributes)
+                    let ntb = tb.DefineNestedType(pntd.Name, attr = attributes)
                     pntd.SetAssembly null
                     typeMap.[pntd] <- ntb
                     typeMembers ntb pntd
@@ -1303,15 +1301,15 @@ type AssemblyGenerator(assemblyFileName) =
                                                 &&& ~~~(enum (int32 TypeProviderTypeAttributes.IsErased))
                 // Adjust the attributes - we're codegen'ing as non-nested
                 let attributes = adjustTypeAttributes attributes false 
-                let tb = assemblyMainModule.DefineType(name=pt.FullName,attr=attributes) 
+                let tb = assemblyMainModule.DefineType(name = pt.FullName, attr=attributes) 
                 pt.SetAssembly null
                 typeMap.[pt] <- tb
                 typeMembers tb pt 
               | Some ns -> 
                 let otb,_ = 
-                    ((None,""),ns) ||> List.fold (fun (otb:TypeBuilder option,fullName) n -> 
+                    ((None,""),ns) ||> List.fold (fun (otb: TypeBuilder option,fullName) n -> 
                         let fullName = if fullName = "" then n else fullName + "." + n
-                        let priorType = if typeMapExtra.ContainsKey(fullName) then Some typeMapExtra.[fullName]  else None
+                        let priorType = if typeMapExtra.ContainsKey(fullName) then Some typeMapExtra.[fullName] else None
                         let tb = 
                             match priorType with 
                             | Some tbb -> tbb 
@@ -1325,8 +1323,8 @@ type AssemblyGenerator(assemblyFileName) =
                             let attributes = adjustTypeAttributes attributes otb.IsSome
                             let tb = 
                                 match otb with 
-                                | None -> assemblyMainModule.DefineType(name=n,attr=attributes) 
-                                | Some (otb:TypeBuilder) -> otb.DefineNestedType(name=n,attr=attributes)
+                                | None -> assemblyMainModule.DefineType(name=n, attr=attributes) 
+                                | Some (otb: TypeBuilder) -> otb.DefineNestedType(name=n, attr=attributes)
                             typeMapExtra.[fullName] <- tb
                             tb
                         (Some tb, fullName))
@@ -1401,7 +1399,7 @@ type AssemblyGenerator(assemblyFileName) =
                 match cinfo with 
                 | :? ProvidedConstructor as pcinfo when not (ctorMap.ContainsKey pcinfo)  -> 
                     let cb = tb.DefineConstructor(cinfo.Attributes, CallingConventions.Standard, [| for p in cinfo.GetParameters() -> convType p.ParameterType |])
-                    for (i,p) in cinfo.GetParameters() |> Seq.mapi (fun i x -> (i,x)) do
+                    for (i,p) in cinfo.GetParameters() |> Seq.mapi (fun i x -> (i, x)) do
                         cb.DefineParameter(i+1, ParameterAttributes.None, p.Name) |> ignore
                     ctorMap.[pcinfo] <- cb
                 | _ -> () 
@@ -1419,8 +1417,8 @@ type AssemblyGenerator(assemblyFileName) =
                 match minfo with 
                 | :? ProvidedMethod as pminfo when not (methMap.ContainsKey pminfo)  -> 
                     let mb = tb.DefineMethod(minfo.Name, minfo.Attributes, convType minfo.ReturnType, [| for p in minfo.GetParameters() -> convType p.ParameterType |])
-                    for (i,p) in minfo.GetParameters() |> Seq.mapi (fun i x -> (i,x)) do
-                        mb.DefineParameter(i+1, ParameterAttributes.None, p.Name) |> ignore
+                    for (i,p) in minfo.GetParameters() |> Seq.mapi (fun i x -> (i, x)) do
+                        mb.DefineParameter(i + 1, ParameterAttributes.None, p.Name) |> ignore
                     methMap.[pminfo] <- mb
                 | _ -> () 
 
@@ -1449,7 +1447,7 @@ type AssemblyGenerator(assemblyFileName) =
                 [ for ctorArg in implictCtorArgs -> 
                       tb.DefineField(ctorArg.Name, convType ctorArg.ParameterType, FieldAttributes.Private) ]
 
-            let emitExpr (ilg: ILGenerator, locals:Dictionary<Quotations.Var,LocalBuilder>, parameterVars) expectedState expr = 
+            let emitExpr (ilg: ILGenerator, locals: Dictionary<Quotations.Var, LocalBuilder>, parameterVars) expectedState expr = 
                 let pop () = ilg.Emit(OpCodes.Pop)
                 let popIfEmptyExpected s = if isEmpty s then pop()
                 /// emits given expression to corresponding IL
@@ -1578,7 +1576,7 @@ type AssemblyGenerator(assemblyFileName) =
 
                         popIfEmptyExpected expectedState
 
-                    | Quotations.Patterns.FieldGet (objOpt,field) -> 
+                    | Quotations.Patterns.FieldGet (objOpt, field) -> 
                         match objOpt with 
                         | None -> () 
                         | Some e -> 
@@ -1590,7 +1588,7 @@ type AssemblyGenerator(assemblyFileName) =
                         else
                             ilg.Emit(OpCodes.Ldfld, field)
 
-                    | Quotations.Patterns.FieldSet (objOpt,field,v) -> 
+                    | Quotations.Patterns.FieldSet (objOpt, field, v) -> 
                         match objOpt with 
                         | None -> () 
                         | Some e -> 
@@ -1602,7 +1600,7 @@ type AssemblyGenerator(assemblyFileName) =
                             ilg.Emit(OpCodes.Stsfld, field)
                         else
                             ilg.Emit(OpCodes.Stfld, field)
-                    | Quotations.Patterns.Call (objOpt,meth,args) -> 
+                    | Quotations.Patterns.Call (objOpt, meth, args) -> 
                         match objOpt with 
                         | None -> () 
                         | Some e -> 
@@ -1645,7 +1643,7 @@ type AssemblyGenerator(assemblyFileName) =
                               ilg.Emit(OpCodes.Ldnull)
                         | _ -> ()
 
-                    | Quotations.Patterns.NewObject (ctor,args) -> 
+                    | Quotations.Patterns.NewObject (ctor, args) -> 
                         for pe in args do 
                             emit ExpectedStackState.Value pe
                         let meth = match ctor with :? ProvidedConstructor as pc when ctorMap.ContainsKey pc -> ctorMap.[pc] :> ConstructorInfo | c -> c
@@ -1837,7 +1835,7 @@ type AssemblyGenerator(assemblyFileName) =
 #else
     member __.GetFinalBytes() = 
         let assemblyBytes = File.ReadAllBytes assemblyFileName
-        let _assemblyLoadedInMemory = System.Reflection.Assembly.Load(assemblyBytes,null,System.Security.SecurityContextSource.CurrentAppDomain)
+        let _assemblyLoadedInMemory = System.Reflection.Assembly.Load(assemblyBytes, null, System.Security.SecurityContextSource.CurrentAppDomain)
         //printfn "final bytes in '%s'" assemblyFileName
         //File.Delete assemblyFileName
         assemblyBytes
@@ -1882,7 +1880,7 @@ type ProvidedAssembly(assemblyFileName:string) =
 
 module Local = 
 
-    let makeProvidedNamespace (namespaceName: string) (types:ProvidedTypeDefinition list) =
+    let makeProvidedNamespace (namespaceName: string) (types: ProvidedTypeDefinition list) =
         let types = [| for ty in types -> ty :> Type |]
         {new IProvidedNamespace with
             member __.GetNestedNamespaces() = [| |]
@@ -1916,7 +1914,7 @@ type TypeProviderForNamespaces(namespacesAndTypes: list<(string * list<ProvidedT
 #endif
 
     new (namespaceName:string,types:list<ProvidedTypeDefinition>) = new TypeProviderForNamespaces([(namespaceName,types)])
-    new () = new TypeProviderForNamespaces([])
+    new () = new TypeProviderForNamespaces([ ])
 
 #if FX_NO_LOCAL_FILESYSTEM
     interface System.IDisposable with 
@@ -1945,7 +1943,7 @@ type TypeProviderForNamespaces(namespacesAndTypes: list<(string * list<ProvidedT
         member x.Dispose() = AppDomain.CurrentDomain.remove_AssemblyResolve handler
 #endif
 
-    member __.AddNamespace (namespaceName,types:list<_>) = otherNamespaces.Add (namespaceName,types)
+    member __.AddNamespace (namespaceName,types: list<_>) = otherNamespaces.Add (namespaceName, types)
     member self.Invalidate() = invalidateE.Trigger(self,EventArgs())
     interface ITypeProvider with
         [<CLIEvent>]
@@ -1995,10 +1993,10 @@ type TypeProviderForNamespaces(namespacesAndTypes: list<(string * list<ProvidedT
                     [| |]
             | _ -> [| |]
 
-        override this.ApplyStaticArguments(ty,typePathAfterArguments: string[],objs) = 
+        override this.ApplyStaticArguments(ty,typePathAfterArguments: string[], objs) = 
             let typePathAfterArguments = typePathAfterArguments.[typePathAfterArguments.Length-1]
             match ty with
-            | :? ProvidedTypeDefinition as t -> (t.MakeParametricType(typePathAfterArguments,objs) :> Type)
+            | :? ProvidedTypeDefinition as t -> (t.MakeParametricType(typePathAfterArguments, objs) :> Type)
             | _ -> failwith (sprintf "ApplyStaticArguments: static params for type %s are unexpected" ty.FullName)
 
 #if FX_NO_LOCAL_FILESYSTEM
