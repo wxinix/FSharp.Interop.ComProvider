@@ -14,10 +14,12 @@ Behind the scenes, _Add Reference_ actually depends on the `TypeLibConverter` cl
 
 The original [fsprojects/FSharp.Interop.ComProvider](https://github.com/fsprojects/FSharp.Interop.ComProvider) project has not been updated since 2016 when F# 3.0 was still in Beta.
 
-With this "dogbooding" project of my own, I made the following updates and changes to the orignal [fsprojects/FSharp.Interop.ComProvider](https://github.com/fsprojects/FSharp.Interop.ComProvider) project:
+With this "dogbooding" project of my own, I made the following updates, enhancements, and changes to the orignal [fsprojects/FSharp.Interop.ComProvider](https://github.com/fsprojects/FSharp.Interop.ComProvider) project:
 - Bring it up to date with F# 4.7.1.
 - Remove the limitation that only 32 bit COM components are supported. Now both 32 bit and 64 bit can be consumed.
-- Cleanse the project layout, removing those files that are irrelevant for my learning purpose.
+- Cleanse the project layout, removing those files that are irrelevant.
+- Add a wildcard "*" as an additional option for preferred platform, intended for loading both win32 and win64 platforms.
+- Enhance the namespace and type path, following the new but more meaningful format: COM.TypeLibraryName.Version-Platform.
 
 ## Limitations and Known Issues
 
@@ -25,7 +27,7 @@ The following known issues and limitations currently apply to the COM provider.
 Some of them I would like to eventually rectify if possible:
 
 * Type libraries with Primary Interop Assemblies (PIAs) such as Microsoft Office are not supported.
-* All the types generated from the type library will be embedded in the assembly, rather than just the ones you actually refer to in your code.
+* All the types generated from the type library will be embedded in the assembly, regardless of whether they are actually referenced in the code or not.
 
 ## Code Style Guidline
 
