@@ -31,14 +31,15 @@ open System.Reflection
 
 type AssemblyProxy(x: Assembly) =
     inherit Assembly()
+    override __.add_ModuleResolve(value) = x.add_ModuleResolve(value)
     override __.CodeBase = x.CodeBase
-    override __.CreateInstance(typeName, ignoreCase, bindingAttr, binder, args, culture, activatorAttributes) = 
-                x.CreateInstance(typeName, ignoreCase, bindingAttr, binder, args, culture, activatorAttributes)
+    override __.CreateInstance(typeName, ignoreCase, bindingAttr, binder, args, culture, activatorAttributes) =
+        x.CreateInstance(typeName, ignoreCase, bindingAttr, binder, args, culture, activatorAttributes)
     override __.EntryPoint = x.EntryPoint
+    override __.Equals(o) = x.Equals(o)
     override __.EscapedCodeBase = x.EscapedCodeBase
     override __.Evidence = x.Evidence
     override __.FullName = x.FullName
-    override __.Equals(o) = x.Equals(o)
     override __.GetCustomAttributes(attributeType, inherited) = x.GetCustomAttributes(attributeType, inherited)
     override __.GetCustomAttributes(inherited) = x.GetCustomAttributes(inherited)
     override __.GetCustomAttributesData() = x.GetCustomAttributesData()
@@ -49,8 +50,8 @@ type AssemblyProxy(x: Assembly) =
     override __.GetHashCode() = x.GetHashCode()
     override __.GetManifestResourceInfo(resourceName) = x.GetManifestResourceInfo(resourceName)
     override __.GetManifestResourceNames() = x.GetManifestResourceNames()
-    override __.GetManifestResourceStream(ty, name) = x.GetManifestResourceStream(ty, name)
     override __.GetManifestResourceStream(name) = x.GetManifestResourceStream(name)
+    override __.GetManifestResourceStream(ty, name) = x.GetManifestResourceStream(ty, name)
     override __.GetModule(name) = x.GetModule(name)
     override __.GetModules(getResourceModules) = x.GetModules(getResourceModules)
     override __.GetName() = x.GetName()
@@ -59,9 +60,9 @@ type AssemblyProxy(x: Assembly) =
     override __.GetReferencedAssemblies() = x.GetReferencedAssemblies()
     override __.GetSatelliteAssembly(culture) = x.GetSatelliteAssembly(culture)
     override __.GetSatelliteAssembly(culture, version) = x.GetSatelliteAssembly(culture, version)
-    override __.GetType(name, throwOnError, ignoreCase) = x.GetType(name, throwOnError, ignoreCase)
-    override __.GetType(name, throwOnError) = x.GetType(name, throwOnError)
     override __.GetType(name) = x.GetType(name)
+    override __.GetType(name, throwOnError) = x.GetType(name, throwOnError)
+    override __.GetType(name, throwOnError, ignoreCase) = x.GetType(name, throwOnError, ignoreCase)
     override __.GetTypes() = x.GetTypes()
     override __.GlobalAssemblyCache = x.GlobalAssemblyCache
     override __.HostContext = x.HostContext
@@ -71,21 +72,20 @@ type AssemblyProxy(x: Assembly) =
     override __.LoadModule(moduleName, rawModule, rawSymbolStore) = x.LoadModule(moduleName, rawModule, rawSymbolStore)
     override __.Location = x.Location
     override __.ManifestModule = x.ManifestModule
-    override __.add_ModuleResolve(value) = x.add_ModuleResolve(value)
-    override __.remove_ModuleResolve(value) = __.remove_ModuleResolve(value)
     override __.PermissionSet = x.PermissionSet
     override __.ReflectionOnly = x.ReflectionOnly
+    override __.remove_ModuleResolve(value) = __.remove_ModuleResolve(value)
     override __.SecurityRuleSet = x.SecurityRuleSet
     override __.ToString() = x.ToString()
 
 type EventInfoProxy(x: EventInfo) =
     inherit EventInfo()
-    override __.Attributes = x.Attributes
     override __.AddEventHandler(target, handler) = x.AddEventHandler(target, handler)
+    override __.Attributes = x.Attributes
     override __.DeclaringType = x.DeclaringType
     override __.GetAddMethod(nonPublic) = x.GetAddMethod(nonPublic)
-    override __.GetCustomAttributes(inherited) = x.GetCustomAttributes(inherited)
     override __.GetCustomAttributes(attributeType, inherited) = x.GetCustomAttributes(attributeType, inherited)
+    override __.GetCustomAttributes(inherited) = x.GetCustomAttributes(inherited)
     override __.GetCustomAttributesData() = x.GetCustomAttributesData()
     override __.GetOtherMethods(nonPublic) = x.GetOtherMethods(nonPublic)
     override __.GetRaiseMethod(nonPublic) = x.GetRaiseMethod(nonPublic)
@@ -104,8 +104,8 @@ type MethodInfoProxy(x: MethodInfo) =
     override __.DeclaringType = x.DeclaringType
     override __.Equals(obj) = x.Equals(obj)
     override __.GetBaseDefinition() = x.GetBaseDefinition()
-    override __.GetCustomAttributes(inherited) = x.GetCustomAttributes(inherited)
     override __.GetCustomAttributes(attributeType, inherited) = x.GetCustomAttributes(attributeType, inherited)
+    override __.GetCustomAttributes(inherited) = x.GetCustomAttributes(inherited)
     override __.GetCustomAttributesData() = x.GetCustomAttributesData()
     override __.GetGenericArguments() = x.GetGenericArguments()
     override __.GetGenericMethodDefinition() = x.GetGenericMethodDefinition()
@@ -136,8 +136,8 @@ type PropertyInfoProxy(x: PropertyInfo) =
     override __.Equals(obj) = x.Equals(obj)
     override __.GetAccessors(nonPublic) = x.GetAccessors(nonPublic)
     override __.GetConstantValue() = x.GetConstantValue()
-    override __.GetCustomAttributes(inherited) = x.GetCustomAttributes(inherited)
     override __.GetCustomAttributes(attributeType, inherited) = x.GetCustomAttributes(attributeType, inherited)
+    override __.GetCustomAttributes(inherited) = x.GetCustomAttributes(inherited)
     override __.GetCustomAttributesData() = x.GetCustomAttributesData()
     override __.GetGetMethod(nonPublic) = x.GetGetMethod(nonPublic)
     override __.GetHashCode() = x.GetHashCode()
@@ -153,7 +153,7 @@ type PropertyInfoProxy(x: PropertyInfo) =
     override __.Name = x.Name
     override __.PropertyType = x.PropertyType
     override __.ReflectedType = x.ReflectedType
-    override __.SetValue(obj, value, invokeAttr, binder, index, culture) = 
+    override __.SetValue(obj, value, invokeAttr, binder, index, culture) =
                 x.SetValue(obj, value, invokeAttr, binder, index, culture)
 
 type TypeProxy(ty) =
