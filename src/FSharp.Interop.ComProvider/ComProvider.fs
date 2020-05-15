@@ -42,9 +42,6 @@ type ComProvider(cfg: TypeProviderConfig) as this =
     /// Currently executing assembly.
     let asm = Assembly.GetExecutingAssembly()
 
-    /// Temporary cache fodler.
-    let tempDir = Path.Combine(cfg.TemporaryFolder, "FSharp.Interop.ComProvider", Guid.NewGuid().ToString())
-
     (*
      The TypeLib registry key allows specifying separate type libraries for platform affinity. 
      However, the type provider has no way to know what target platform the subject project 
@@ -74,27 +71,27 @@ type ComProvider(cfg: TypeProviderConfig) as this =
     // 2. Namespace components cannot contain dots, which are common both in the
     // type library name itself and of course the major.minor version number.
     let types =
-        [ for name, libs in loadTypeLibs preferredPlatform |> Seq.groupBy (fun lib -> lib.Name) do
+        [ for name, libsByName in loadTypeLibs preferredPlatform |> Seq.groupBy (fun lib -> lib.Name) do
             let nameTy = ProvidedTypeDefinition(asm, "COM", name, None) // COM is namespaceName.
             yield nameTy
-            for lib in libs do
-               let versionTy = ProvidedTypeDefinition(TypeContainer.TypeToBeDecided, lib.Version.VersionStr, None)
-               nameTy.AddMember(versionTy)
-               versionTy.IsErased <- false
-               versionTy.AddMembersDelayed <| fun _ ->
-                   lib.Pia |> Option.iter (fun pia -> 
-                       failwithf "Accessing type libraries with Primary Interop Assemblies using the COM Type Provider not supported. Directly referencing the assembly '%s' instead." pia)
-                   Directory.CreateDirectory(tempDir) |> ignore
-                   let assemblies = importTypeLib lib.Path tempDir
-                   assemblies |> List.iter(fun asm -> ProvidedAssembly.RegisterGenerated(asm.Location) |> ignore)
-                   assemblies |> List.collect(fun asm -> asm.GetTypes() |> Seq.toList) ]
+
+            for verStr, libsByVer in libsByName |> Seq.groupBy(fun lib -> lib.Version.VersionStr) do     
+                for lib in libsByVer do
+                    let subTy = ProvidedTypeDefinition(TypeContainer.TypeToBeDecided, verStr + "-" + lib.Platform, None)
+                    nameTy.AddMember(subTy)
+                    subTy.IsErased <- false
+                    subTy.AddMembersDelayed <| fun _ ->
+                        lib.Pia |> Option.iter (fun pia -> 
+                            failwithf "Accessing type libraries with Primary Interop Assemblies using the COM Type Provider not supported. Directly referencing the assembly '%s' instead." pia)                           
+                        let tempDir = Path.Combine(cfg.TemporaryFolder, "FSharp.Interop.ComProvider", Guid.NewGuid().ToString())
+                        Directory.CreateDirectory(tempDir) |> ignore
+                        let assemblies = importTypeLib lib.Path tempDir
+                        // assemblies |> List.iter(fun asm -> ProvidedAssembly.RegisterGenerated(asm.Location) |> ignore)
+                        assemblies |> List.collect(fun asm -> asm.GetTypes() |> Seq.toList) ]
+
     do
         this.AddNamespace("COM", types)
-        this.RegisterProbingFolder(cfg.TemporaryFolder)
-
-    /// Finalizer to delete the temporary cache folder.
-    override this.Finalize() = 
-        Directory.Delete(tempDir, true) |> ignore
+        // this.RegisterProbingFolder(cfg.TemporaryFolder)
 
 [<TypeProviderAssembly>]
 ()
