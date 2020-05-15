@@ -74,17 +74,15 @@ let rec importTypeLib path asmDir =
             member __.ResolveRef(typeLib) = convertToAsm (typeLib :?> ITypeLib) }
 
         // Convert type lib to assembly, then save the assembly to disk file in a temp folder.
-        let asm = TypeLibConverter().ConvertTypeLibToAssembly(typeLib, asmPath, flags, sink, null, null, libName, null)
-        asm.Save(asmFile) // asmFile cannot contain path, just file name.
+        let asmBuilder = TypeLibConverter().ConvertTypeLibToAssembly(typeLib, asmPath, flags, sink, null, null, libName, null)
+        asmBuilder.Save(asmFile) // asmFile cannot contain path, just file name.
 
         // Load the assembly into memory
-        Assembly.LoadFrom (asmPath)
-        |> annotateAssembly (getTypeLibDoc typeLib)
-        |> hideEvents
-        |> assemblies.Add
-
+        let assembly = Assembly.LoadFrom(asmPath)
+        assembly |> annotateAssembly (getTypeLibDoc typeLib) |> hideEvents |> assemblies.Add
+  
         // Return the converted assembly
-        asm :> Assembly
+        assembly
 
     // Return the local assemblies array as an immutable list.
     let typeLib = loadTypeLib path
