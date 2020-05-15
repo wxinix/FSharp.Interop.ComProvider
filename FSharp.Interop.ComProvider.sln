@@ -4,8 +4,6 @@ VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharp.Interop.ComProvider", "src\FSharp.Interop.ComProvider\FSharp.Interop.ComProvider.fsproj", "{7E90D6CE-A10B-4858-A5BC-41DF7250CBCA}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharp.Interop.ComProvider.Tests", "src\FSharp.Interop.ComProvider.Tests\FSharp.Interop.ComProvider.Tests.fsproj", "{7ADF9B3C-D9DA-49FD-A7C9-0A58DA533109}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -16,10 +14,6 @@ Global
 		{7E90D6CE-A10B-4858-A5BC-41DF7250CBCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E90D6CE-A10B-4858-A5BC-41DF7250CBCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7E90D6CE-A10B-4858-A5BC-41DF7250CBCA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7ADF9B3C-D9DA-49FD-A7C9-0A58DA533109}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7ADF9B3C-D9DA-49FD-A7C9-0A58DA533109}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7ADF9B3C-D9DA-49FD-A7C9-0A58DA533109}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7ADF9B3C-D9DA-49FD-A7C9-0A58DA533109}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
