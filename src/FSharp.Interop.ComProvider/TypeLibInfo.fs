@@ -63,17 +63,17 @@ let loadTypeLibs preferredPlatform =
           for verKey in typeLibKey.GetSubKeys() do                // verKey is a version string in the format "major.minor"
               for localeKey in verKey.GetSubKeys() do             // localeKey is a number representing locale
                   for platformKey in localeKey.GetSubKeys() do    // platformKey is either "win32" or "win64"
-                      let name = verKey.DefaultValue
-                      let version = tryParseVersion verKey.ShortName
-                      if name <> "" && version.IsSome && localeKey.ShortName = "0" then
-                          yield { Name = name
-                                  Version = version.Value // version is option(TypeLibVersion)
-                                  Platform = platformKey.ShortName
-                                  Path = platformKey.DefaultValue
-                                  Pia = match verKey.GetValue("PrimaryInteropAssemblyName") with
-                                        | :? string as pia -> Some pia
-                                        | _ -> None } ]
+                      match (verKey.DefaultValue, tryParseVersion verKey.ShortName, localeKey.ShortName) with
+                      | (name, version, locale) when name <> "" && version.IsSome && locale = "0" -> 
+                            yield {
+                                Name = name
+                                Version = version.Value
+                                Platform = platformKey.ShortName
+                                Path = platformKey.DefaultValue
+                                Pia = match verKey.GetValue("PrimaryInteropAssemblyName") with
+                                      | :? string as pia -> Some pia
+                                      | _ -> None }
+                      | _ -> () ]
     |> Seq.filter (fun lib -> not (isInDotNetPath lib.Path))
     |> Seq.groupBy (fun lib -> lib.Name, lib.Version)
-    |> Seq.collect (fun (_, libs) -> 
-           libs |> Seq.filter(fun lib -> preferredPlatform = lib.Platform || preferredPlatform = "*"))
+    |> Seq.collect (fun (_, libs) -> libs |> Seq.filter(fun lib -> preferredPlatform = lib.Platform || preferredPlatform = "*"))
