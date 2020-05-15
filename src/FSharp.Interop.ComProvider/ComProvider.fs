@@ -43,16 +43,16 @@ type ComProvider(cfg: TypeProviderConfig) as this =
     let asm = Assembly.GetExecutingAssembly()
 
     (*
-     The TypeLib registry key allows specifying separate type libraries for platform affinity. 
-     However, the type provider has no way to know what target platform the subject project 
+     The TypeLib registry key allows specifying separate type libraries for platform affinity.
+     However, the type provider has no way to know what target platform the subject project
      will be compiled to beforehand. Furthermore, the target platform isn't actually known until
-     runtime if "Any CPU" is selected. Therefore, we have to leave this as the developer's choice 
+     runtime if "Any CPU" is selected. Therefore, we have to leave this as the developer's choice
      in selecting the type library with proper platform affinity at source code level.
 
      If the type library is for an out-of-process COM automation server, the client application
      and server do not have to have the same CPU platform, that is, a win32 client can communicate
-     with a win64 COM server. In this case, we can choose win32 or win64 type library as we like, 
-     while seting either "Any CPU", "x86", or "x64" as the compiling option for the client application. 
+     with a win64 COM server. In this case, we can choose win32 or win64 type library as we like,
+     while seting either "Any CPU", "x86", or "x64" as the compiling option for the client application.
 
      If the type library is for an in-process COM Dll, the client application and the COM Dll must
      have the same target platform. This means, if the COM Dll is 32 bit, the compiling option must
@@ -75,13 +75,13 @@ type ComProvider(cfg: TypeProviderConfig) as this =
             let nameTy = ProvidedTypeDefinition(asm, "COM", name, None) // COM is namespaceName.
             yield nameTy
 
-            for verStr, libsByVer in libsByName |> Seq.groupBy(fun lib -> lib.Version.VersionStr) do     
+            for verStr, libsByVer in libsByName |> Seq.groupBy(fun lib -> lib.Version.VersionStr) do
                 for lib in libsByVer do
                     let subTy = ProvidedTypeDefinition(TypeContainer.TypeToBeDecided, verStr + "-" + lib.Platform, None)
                     nameTy.AddMember(subTy)
                     subTy.IsErased <- false
                     subTy.AddMembersDelayed <| fun _ ->
-                        lib.Pia |> Option.iter (fun pia -> 
+                        lib.Pia |> Option.iter (fun pia ->
                             failwithf "Accessing type libraries with Primary Interop Assemblies using the COM Type Provider not supported. Directly referencing the assembly '%s' instead." pia)                           
                         let tempDir = Path.Combine(cfg.TemporaryFolder, "FSharp.Interop.ComProvider", Guid.NewGuid().ToString())
                         Directory.CreateDirectory(tempDir) |> ignore
