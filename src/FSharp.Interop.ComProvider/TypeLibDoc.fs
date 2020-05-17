@@ -37,9 +37,9 @@ open ReflectionProxies
 open Utility
 
 let getStruct<'t when 't: struct> ptr freePtr =
-    let str = Marshal.PtrToStructure(ptr, typeof<'t>) :?> 't
+    let st = Marshal.PtrToStructure(ptr, typeof<'t>) :?> 't
     freePtr ptr
-    str
+    st
 
 let getTypeLibDoc (typeLib: ITypeLib) =
     [ for typeIndex = 0 to typeLib.GetTypeInfoCount() - 1 do
@@ -58,13 +58,16 @@ let annotateAssembly typeDocs (asm: Assembly) =
     let toList (items: seq<'t>) = ResizeArray<'t> items :> IList<'t>
 
     let attrCons = typeof<TypeProviderXmlDocAttribute>.GetConstructor [| typeof<string> |]
+    
     let attrData docString =
         { new CustomAttributeData() with
             override __.Constructor = attrCons
             override __.ConstructorArguments = [ CustomAttributeTypedArgument docString ] |> toList }
-    let addAttr docString (memb:MemberInfo) =
-        if String.IsNullOrWhiteSpace docString then []
-        else [attrData docString]
+    
+    let addAttr docString (memb: MemberInfo) =
+        match docString with
+        | s when not (String.IsNullOrWhiteSpace s) -> [attrData s]
+        | _ -> []
         |> Seq.append (memb.GetCustomAttributesData())
         |> toList
 
