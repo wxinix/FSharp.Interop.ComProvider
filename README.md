@@ -8,7 +8,7 @@ COM Type Provider is a specialized F# type provider using registered COM type li
 
 ## Purpose
 
-Adapted from the [fsprojects/FSharp.Interop.ComProvider](https://github.com/fsprojects/FSharp.Interop.ComProvider) project, this repo is independently updated and maintenained by Wuping Xin (https://github.com/wxinix), serving as a personal "dogfooding" project in F# language. You are welcome to reference and use it in your own project should you find it useful.
+Adapted from the [open-source fsprojects](https://github.com/fsprojects/FSharp.Interop.ComProvider) project, this repo is independently updated and maintenained by Wuping Xin (https://github.com/wxinix), serving as a personal "dogfooding" project in F# language. You are welcome to reference and use it in your own project should you find it useful.
 
 ## Technical Overview
 
