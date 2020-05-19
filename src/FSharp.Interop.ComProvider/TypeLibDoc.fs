@@ -99,7 +99,7 @@ let annotateAssembly typeDocs (asm: Assembly) =
         |> Seq.choose (fun (_, membs) -> membs |> Map.tryFind (findRelatedMember memb).Name)
         |> Seq.tryFind (not << String.IsNullOrEmpty)
 
-    let annotate getDoc addAnnotation (memb: #MemberInfo) =
+    let annotate getDoc addAnnotation (memb: #MemberInfo) =  // Object -> MemberInfo -> Type
         let doc = defaultArg (getDoc memb) ""
         addAnnotation (addAttr doc memb) memb
 
@@ -115,12 +115,18 @@ let annotateAssembly typeDocs (asm: Assembly) =
         { new PropertyInfoProxy(prop) with
             override __.GetCustomAttributesData() = data } :> PropertyInfo
 
-    let annotateType = annotate typeDoc <| fun attr ty ->
+    let annotateType = annotate typeDoc <| fun attr ty ->  // Pipe backward
         { new TypeProxy(ty) with
-            override __.GetCustomAttributesData() = attr
-            override __.GetEvents(flags) = ty.GetEvents(flags) |> Array.map annotateEvent
-            override __.GetMethods(flags) = ty.GetMethods(flags) |> Array.map annotateMethod
-            override __.GetProperties(flags) = ty.GetProperties(flags) |> Array.map annotateProperty } :> Type
+            override __.GetCustomAttributesData() = attr            
+            
+            override __.GetEvents(flags) =
+                ty.GetEvents(flags) |> Array.map annotateEvent            
+            
+            override __.GetMethods(flags) =
+                ty.GetMethods(flags) |> Array.map annotateMethod
+            
+            override __.GetProperties(flags) =
+                ty.GetProperties(flags) |> Array.map annotateProperty } :> Type
 
     { new AssemblyProxy(asm) with
         override __.GetTypes() = asm.GetTypes() |> Array.map annotateType } :> Assembly
