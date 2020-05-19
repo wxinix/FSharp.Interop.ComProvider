@@ -6,7 +6,9 @@ Simply put, an F# type provider is just an F# compiler plugin, allowing a develo
 
 COM Type Provider is a specialized F# type provider using registered COM type libraries as the data source, while providing a new way to do COM interop from F#.
 
-Adapted from the [fsprojects/FSharp.Interop.ComProvider](https://github.com/fsprojects/FSharp.Interop.ComProvider) project, this repo is independently updated and maintenained by Wuping Xin (https://github.com/wxinix), serving as a personal "dogfooding" project in F# language.
+## Purpose
+
+Adapted from the [fsprojects/FSharp.Interop.ComProvider](https://github.com/fsprojects/FSharp.Interop.ComProvider) project, this repo is independently updated and maintenained by Wuping Xin (https://github.com/wxinix), serving as a personal "dogfooding" project in F# language. You are welcome to reference and use it in your own project should you find it useful.
 
 ## Technical Overview
 
