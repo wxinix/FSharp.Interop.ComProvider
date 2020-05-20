@@ -41,40 +41,39 @@ let getStruct<'t when 't: struct> ptr freePtr =
     freePtr ptr
     st
 
-/// <summary>Retrieves documentation for every types defined in the type library. </summary>
-/// <return> Map<typeName: string, (typeDocStr: string * Map<funcName: string, funcDocStr: string>) </return>
+/// Retrieves documentation for every types defined in the type library.
 let getTypeLibDoc (typeLib: ITypeLib) =
     [ for typeIndex = 0 to typeLib.GetTypeInfoCount() - 1 do
-        let typeInfo = typeLib.GetTypeInfo(typeIndex)        
+        let typeInfo = typeLib.GetTypeInfo(typeIndex)
         // Retrieves a TYPEATTR structure that contains the attributes of the type description.
-        let typeAttr = getStruct<TYPEATTR> (typeInfo.GetTypeAttr()) typeInfo.ReleaseTypeAttr        
-        // GetDocumentation provides access to the documentation for the member specified by the memid parameter. 
+        let typeAttr = getStruct<TYPEATTR> (typeInfo.GetTypeAttr()) typeInfo.ReleaseTypeAttr
+        // GetDocumentation provides access to the documentation for the member specified by the memid parameter.
         // If the passed-in memid is MEMBERID_NIL (-1), then the documentation for the type description is returned.
         let typeName, typeDoc, _, _ = typeInfo.GetDocumentation(-1)
-        
+
         // Retrieves function members and associated doc string for each function.
         let memberDocs =
             [ for funcIndex = 0 to int typeAttr.cFuncs - 1 do
                 let funcDesc = getStruct<FUNCDESC> (typeInfo.GetFuncDesc(funcIndex)) typeInfo.ReleaseFuncDesc
                 let funcName, funcDoc, _, _ = typeInfo.GetDocumentation(funcDesc.memid)
-                yield funcName, funcDoc ]        
+                yield funcName, funcDoc ]
         // Yield tuple (typeName: string, tuple (typeDoc: string, Seq<(funcName, funcDoc)>))
         yield typeName, (typeDoc, Map.ofSeq memberDocs) ]
     |> Map.ofSeq
 
 let annotateAssembly typeDocs (asm: Assembly) =
     let toList (items: seq<'t>) = ResizeArray<'t> items :> IList<'t>
-    
+
     /// Searches for a public instance constructor whose parameters match the types in the specified array.
     /// Returns ConstructorInfo, representing the attributes of a class constructor and providing access to constructor metadata
     let docAttrCtor = typeof<TypeProviderXmlDocAttribute>.GetConstructor [| typeof<string> |]
-    
+
     /// Creates a new instance of CustomAttributeData for TypeProviderXmlDocAttribute using the specified docString.
     let createDocAttrData docString =
         { new CustomAttributeData() with
             override __.Constructor = docAttrCtor
             override __.ConstructorArguments = [ CustomAttributeTypedArgument docString ] |> toList }
-    
+
     /// Creates a new instance of CustomAttributeData for TypeProviderXmlDocAttribute using the specified docString,
     /// and add it to memb's existing list of CustomAttributeData.
     let addDocAttrData docString (memb: MemberInfo) =
@@ -95,7 +94,7 @@ let annotateAssembly typeDocs (asm: Assembly) =
         | Some attr -> attr.SourceInterface
         | _ -> ty
 
-    /// If the member is a method for adding or removing event, return the associated event is returned; otherwise,
+    /// If the member is a method for adding or removing event, the associated event is returned; otherwise,
     /// just return the member itself.
     let findRelatedMember (memb: MemberInfo) =
         memb.DeclaringType.GetEvents() // DeclaringType: class that declares this member.
@@ -123,7 +122,7 @@ let annotateAssembly typeDocs (asm: Assembly) =
 
     let annotate getDoc addAnnotation memb: #MemberInfo =  // Object -> MemberInfo -> Type
         let doc = defaultArg (getDoc memb) ""
-        let data = addDocAttrData doc memb 
+        let data = addDocAttrData doc memb
         addAnnotation data memb
 
     let annotateEvent = annotate memberDoc <| fun data event ->
@@ -143,13 +142,13 @@ let annotateAssembly typeDocs (asm: Assembly) =
     let annotateType = annotate typeDoc <| fun attr ty ->  // Pipe backward
         { new TypeProxy(ty) with
             override __.GetCustomAttributesData() = attr
-            
+   
             override __.GetEvents(flags) =
                 ty.GetEvents(flags) |> Array.map annotateEvent
-            
+   
             override __.GetMethods(flags) =
                 ty.GetMethods(flags) |> Array.map annotateMethod
-            
+   
             override __.GetProperties(flags) =
                 ty.GetProperties(flags) |> Array.map annotateProperty } :> Type
 
