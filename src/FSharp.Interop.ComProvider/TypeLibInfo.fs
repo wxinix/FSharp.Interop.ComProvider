@@ -57,14 +57,14 @@ let private isInDotNetPath =
 
 /// Loads type libs for the preferred platform and returns a sequence of TypeLib records. The preferred platform
 /// can be either "win32", "win64", or "*". If "*", then both "win32" and "win64" type libs will be loaded. 
-let loadTypeLibs preferredPlatform nameFilter =
+let loadTypeLibs preferredPlatform (nameFilter: string) =
     [ use rootKey = Registry.ClassesRoot.OpenSubKey("TypeLib")
       for typeLibKey in rootKey.GetSubKeys() do                   // typeLibKey is a GUID string
           for verKey in typeLibKey.GetSubKeys() do                // verKey is a version string in the format "major.minor"
               for localeKey in verKey.GetSubKeys() do             // localeKey is a number representing locale
                   for platformKey in localeKey.GetSubKeys() do    // platformKey is either "win32" or "win64"
                       let name, version, locale = verKey.DefaultValue, tryParseVersion verKey.ShortName, localeKey.ShortName
-                      if name <> "" && (name.Contains(nameFilter) || nameFilter = "*") && version.IsSome && locale = "0" then                 
+                      if name <> "" && (name.Contains(nameFilter.ToLower()) || nameFilter = "*") && version.IsSome && locale = "0" then                 
                           yield {
                               Name = name
                               Version = version.Value

@@ -71,7 +71,7 @@ type ComProvider(cfg: TypeProviderConfig) as this =
     // 2. Namespace components cannot contain dots, which are common both in the
     // type library name itself and of course the major.minor version number.
     let types =
-        [ for name, libsByName in loadTypeLibs preferredPlatform |> Seq.groupBy (fun lib -> lib.Name) do
+        [ for name, libsByName in loadTypeLibs preferredPlatform "*" |> Seq.groupBy (fun lib -> lib.Name) do
             let nameTy = ProvidedTypeDefinition(asm, "COM", name, None) // COM is namespaceName.
             yield nameTy
 
