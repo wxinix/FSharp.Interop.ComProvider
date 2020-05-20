@@ -64,7 +64,7 @@ let loadTypeLibs preferredPlatform (nameFilter: string) =
               for localeKey in verKey.GetSubKeys() do             // localeKey is a number representing locale
                   for platformKey in localeKey.GetSubKeys() do    // platformKey is either "win32" or "win64"
                       let name, version, locale = verKey.DefaultValue, tryParseVersion verKey.ShortName, localeKey.ShortName
-                      if name <> "" && (name.Contains(nameFilter.ToLower()) || nameFilter = "*") && version.IsSome && locale = "0" then                 
+                      if name <> "" && (name.ToLower().Contains(nameFilter.ToLower()) || nameFilter = "*") && version.IsSome && locale = "0" then                 
                           yield {
                               Name = name
                               Version = version.Value
