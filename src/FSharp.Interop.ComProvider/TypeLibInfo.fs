@@ -57,23 +57,22 @@ let private isInDotNetPath =
 
 /// Loads type libs for the preferred platform and returns a sequence of TypeLib records. The preferred platform
 /// can be either "win32", "win64", or "*". If "*", then both "win32" and "win64" type libs will be loaded. 
-let loadTypeLibs preferredPlatform =
+let loadTypeLibs preferredPlatform nameFilter =
     [ use rootKey = Registry.ClassesRoot.OpenSubKey("TypeLib")
       for typeLibKey in rootKey.GetSubKeys() do                   // typeLibKey is a GUID string
           for verKey in typeLibKey.GetSubKeys() do                // verKey is a version string in the format "major.minor"
               for localeKey in verKey.GetSubKeys() do             // localeKey is a number representing locale
                   for platformKey in localeKey.GetSubKeys() do    // platformKey is either "win32" or "win64"
-                      match (verKey.DefaultValue, tryParseVersion verKey.ShortName, localeKey.ShortName) with
-                      | (name, version, locale) when name <> "" && version.IsSome && locale = "0" -> 
-                            yield {
-                                Name = name
-                                Version = version.Value
-                                Platform = platformKey.ShortName
-                                Path = platformKey.DefaultValue
-                                Pia = match verKey.GetValue("PrimaryInteropAssemblyName") with
-                                      | :? string as pia -> Some pia
-                                      | _ -> None }
-                      | _ -> () ]
+                      let name, version, locale = verKey.DefaultValue, tryParseVersion verKey.ShortName, localeKey.ShortName
+                      if name <> "" && (name.Contains(nameFilter) || nameFilter = "*") && version.IsSome && locale = "0" then                 
+                          yield {
+                              Name = name
+                              Version = version.Value
+                              Platform = platformKey.ShortName
+                              Path = platformKey.DefaultValue
+                              Pia = match verKey.GetValue("PrimaryInteropAssemblyName") with
+                                    | :? string as pia -> Some pia
+                                    | _ -> None } ]
     |> Seq.filter (fun lib -> not (isInDotNetPath lib.Path))
     |> Seq.groupBy (fun lib -> lib.Name, lib.Version)
     |> Seq.collect (fun (_, libs) -> libs |> Seq.filter(fun lib -> preferredPlatform = lib.Platform || preferredPlatform = "*"))
