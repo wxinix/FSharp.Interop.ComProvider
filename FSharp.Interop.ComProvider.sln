@@ -1,8 +1,9 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
-VisualStudioVersion = 16.0.30011.22
+VisualStudioVersion = 16.0.30104.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharp.Interop.ComProvider", "src\FSharp.Interop.ComProvider\FSharp.Interop.ComProvider.fsproj", "{7E90D6CE-A10B-4858-A5BC-41DF7250CBCA}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharp.Interop.ComProvider", "Src\FSharp.Interop.ComProvider.fsproj", "{7E90D6CE-A10B-4858-A5BC-41DF7250CBCA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,6 +20,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {050D1250-B857-442A-A40C-C41D5297EC79}
+		SolutionGuid = {1F3DE68F-A6BD-41BC-A9C6-96E0D8B4B94A}
 	EndGlobalSection
 EndGlobal
