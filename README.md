@@ -21,11 +21,12 @@ Behind the scenes, _Add Reference_ actually depends on the `TypeLibConverter` cl
 The original [fsprojects/FSharp.Interop.ComProvider](https://github.com/fsprojects/FSharp.Interop.ComProvider) project has not been updated since 2016 when F# 3.0 was still in Beta.
 
 The following updates, enhancements, and changes have been made to the orignal [fsprojects/FSharp.Interop.ComProvider](https://github.com/fsprojects/FSharp.Interop.ComProvider) project:
-- Bring it up to date with F# 4.7.1.
+- Bring it up to date with F# 4.7.2.
 - Remove the limitation that only 32 bit COM components are supported. Now both 32 bit and 64 bit can be consumed.
 - Cleanse the project layout, removing those files that are irrelevant.
 - Add a wildcard "*" as an additional option for preferred platform, intended for loading both win32 and win64 platforms.
 - Enhance the namespace and type path, following the new but more meaningful format: COM.TypeLibraryName.Version-Platform.
+- Various code cleanup and adding relevant comments.
 
 ## Limitations and Known Issues
 
