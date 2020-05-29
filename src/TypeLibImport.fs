@@ -65,7 +65,7 @@ let rec importTypeLib path asmDir =
     // while adding the converted assemblies to the local mutable assemblies array.
     let rec convertToAsm (typeLib: ITypeLib) =
         let libName = Marshal.GetTypeLibName(typeLib)
-        let asmFile = libName + ".dll"
+        let asmFile = libName + "-" + Guid.NewGuid().ToString() + ".dll"
         let asmPath = Path.Combine(asmDir, asmFile)
         let flags = TypeLibImporterFlags.None
 
